@@ -46,8 +46,14 @@ class_names = open('labels.txt', 'r').readlines()
 # determined by the first position in the shape tuple, in this case 1.
 data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
 
+mode=st.select_slider('Choose between using a jpg file or taking a picture using your camera', options=['JPG','CAMERA'])
 
-uploaded_file = st.file_uploader("Choose an Image", type="jpg")
+if mode == 'CAMERA':
+ uploaded_file = st.camera_input("Take a photo of the slide")
+
+if mode == 'JPG':
+ uploaded_file = st.file_uploader("Choose an Image", type="jpg")
+
 image = Image.open(uploaded_file).convert('RGB')
 
 
@@ -70,6 +76,7 @@ prediction = model.predict(data)
 index = np.argmax(prediction)
 class_name = class_names[index]
 confidence_score = prediction[0][index]
+confidence = confidence_score
 
 print('Class:', class_name, end='')
 print('Confidence score:', confidence_score)
@@ -89,51 +96,47 @@ if uploaded_file is not None:
  st.write("")
  st.write("Doing the classification......Calling the pathologist and the loyal scribe Jonathan")
 
- sex = st.sidebar.selectbox(
-    'What is the sex of the person?',
-    ('Male', 'Female'))
-
+ sex = st.sidebar.selectbox('What is the sex of the person?',('Male', 'Female'))
  age = st.sidebar.slider("What is the age of the person?",0.0,150.0,50.0)
- 
- if age <= 5 and sex == 'male':
-  confidence_scoremod=confidence_score*((165+age)/100)
- if age > 5 and age <= 25 and sex == 'male':
-  confidence_scoremod=confidence_score*((100-age)/100)
- if age > 25 and age <=50 and sex == 'male':
-  confidence_scoremod=confidence_score*((60+age)/100)
- if age > 50 and sex == 'male':
-  confidence_scoremod=confidence_score*((70+age)/100)
- if age <= 5 and sex == 'female':
-  confidence_scoremod=confidence_score*((160+age)/100)
- if age > 5 and age <= 50 and sex == 'female':
-  confidence_scoremod=confidence_score*((95-age)/100)
- if age > 25 and age <=50 and sex == 'female':
-  confidence_scoremod=confidence_score*((50+age)/100)
- if age > 50 and sex == 'female':
-  confidence_scoremod=confidence_score*((65+age)/100)
- 
+
+ if age <= 5.0 and sex == 'Male':
+  confidence = confidence_score * ((165+age)/100)
+ if age > 5.0 and age <= 25.0 and sex == 'Male':
+  confidence = confidence_score * ((100-age)/100)
+ if age > 25.0 and age <=50.0 and sex == 'Male':
+  confidence = confidence_score * ((60+age)/100)
+ if age > 50.0 and sex == 'Male':
+  confidence = confidence_score * ((70+age)/100)
+ if age <= 5.0 and sex == 'Female':
+  confidence = confidence_score * ((160+age)/100)
+ if age > 5.0 and age <= 50.0 and sex == 'Female':
+  confidence = confidence_score * ((95-age)/100)
+ if age > 25.0 and age <=50.0 and sex == 'Female':
+  confidence = confidence_score * ((50+age)/100)
+ if age > 50.0 and sex == 'Female':
+  confidence = confidence_score * ((65+age)/100)
+
 
 if confidence_score >= 0.85:
-  
+
  if index == 0:
   st.write('You identify as', sex,'and your age is', age,'years')
   st.write('The Predicted Class is:', class_name)
   st.write('The Original Probability Percentage:', confidence_score*100, '%')
-  st.write('Probability Percentage due to your age group:', confidence_scoremod*100, '%')
+  st.write('Probability Percentage due to your age group:', confidence * 100, '%')
   st.write("You may have a benign condition, or are free of ALL. Get it checked once during your regular body check")
   st.write("Benign tumors are those that stay in their primary location without invading other sites of the body. They do not spread to local structures or to distant parts of the body. Benign tumors tend to grow slowly and have distinct borders. Benign tumors are not usually problematic.")
 
  else:
   st.write('You identify as', sex,'and your age is', age,'years')
-  st.write("You should get it checked as soon as possible")
   st.write('The Predicted Class is:', class_name)
   st.write('The Original Probability Percentage:', confidence_score*100, '%')
-  st.write('Probability Percentage due to your age group:', confidence_scoremod*100, '%')
+  st.write('Probability Percentage due to your age group:', confidence * 100, '%')
   st.write("Malignancy is a term for diseases in which abnormal cells divide without control and can invade nearby tissues. Malignant cells can also spread  to other parts of the body through the blood and lymph systems.")
 
 
 else:
- st.write("Not a huge concern but don't forget to get a regular body checkup. Better safe than sorry")   
+ st.write("Not a huge concern but don't forget to get a regular body checkup. Please ensure to get a detailed jpg if you have used the camera feature")   
 
 
 if index == 1:
@@ -142,6 +145,17 @@ elif index == 2:
  st.write("This looks like a Malignant Pre-B variant of ALL. You need to get it checked ASAP before the condition metastisizes")
 elif index == 3:
  st.write("This looks like an early Malignant Pre-B variant of ALL. You need to get it checked as a priority before it becomes something serious")
+
+
+
+ 
+
+
+
+
+
+
+
 
 
 
